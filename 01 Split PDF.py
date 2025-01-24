@@ -1,13 +1,19 @@
 import os
 from PyPDF2 import PdfReader, PdfWriter
-import xlsxwriter
+#import xlsxwriter
+import sys
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+working_folder = os.path.abspath(os.path.join(script_directory, '..'))
+function_library = os.path.abspath(os.path.join(script_directory, 'Library'))
+sys.path.append(function_library)  # Add the library folder to the path.
+
 
 def main():
     # Step 1: Get user input for PDF file name (without extension)
-    #pdf_name = input("Enter the PDF file name without extension: ")
-    pdf_name = './Adjudicación Dabigatrán_updated'
-    pdf_path = f".\\{pdf_name}.pdf"
-    
+    pdf_name = 'Cartas_updated'  # Example PDF name
+    pdf_path = os.path.join(working_folder, f'{pdf_name}.pdf')  # Use an f-string to inject pdf_name
+    print(f"PDF path: {pdf_path}")
     # Step 2: Verify the PDF file exists
     if not os.path.isfile(pdf_path):
         print(f"The file '{pdf_path}' does not exist.")
@@ -20,7 +26,7 @@ def main():
     # Step 4: Get the user-provided bookmark names
     #user_bookmark_names = input("Enter the bookmark names separated by '|': ").split('|')
     # Main script
-    md_file = './Bookmarks.md'  # Path to your .md file
+    md_file = os.path.join(working_folder,'Bookmarks.md') # Path to your .md file
     user_bookmark_names = load_bookmarks(md_file)
 
     if user_bookmark_names:
@@ -37,7 +43,7 @@ def main():
         return
     
     # Ensure the output folder exists
-    output_folder = ".\\Output"
+    output_folder = os.path.join(working_folder,'output')
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -75,12 +81,12 @@ def split_pdf_by_bookmarks(path_to_pdf, output_folder, bookmark_names):
     bookmarks = pdf.outline
     prev_bookmark_title = None
     prev_bookmark_page_index = None
-    root_folder = ".\\"
+    #root_folder = ".\\"
     # Prepare Excel output
-    workbook = xlsxwriter.Workbook(os.path.join(root_folder, 'Bookmarks_exported.xlsx'))
-    worksheet = workbook.add_worksheet()
-    worksheet.write(0, 0, 'PDF File Name')
-    row = 1  # Start writing PDF names in Excel from row 1
+    #workbook = xlsxwriter.Workbook(os.path.join(root_folder, 'Bookmarks_exported.xlsx'))
+    #worksheet = workbook.add_worksheet()
+    #worksheet.write(0, 0, 'PDF File Name')
+    #ow = 1  # Start writing PDF names in Excel from row 1
 
     # Iterate through bookmarks
     for i, bookmark in enumerate(bookmarks):
@@ -97,8 +103,8 @@ def split_pdf_by_bookmarks(path_to_pdf, output_folder, bookmark_names):
                     pdf_writer.write(f_out)
                 
                 # Save file name to Excel
-                worksheet.write(row, 0, f"{prev_bookmark_title}.pdf")
-                row += 1
+                #worksheet.write(row, 0, f"{prev_bookmark_title}.pdf")
+                #row += 1
 
             prev_bookmark_title = title
             prev_bookmark_page_index = page_index
@@ -113,9 +119,9 @@ def split_pdf_by_bookmarks(path_to_pdf, output_folder, bookmark_names):
             pdf_writer.write(f_out)
 
         # Save last PDF name to Excel
-        worksheet.write(row, 0, f"{prev_bookmark_title}.pdf")
+        #worksheet.write(row, 0, f"{prev_bookmark_title}.pdf")
 
-    workbook.close()
+    #workbook.close()
     print("All bookmarks have been split and saved.")
 
 def sanitize_filename(name):

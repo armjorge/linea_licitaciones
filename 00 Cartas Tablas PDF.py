@@ -26,7 +26,7 @@ sys.path.append(function_library)  # Add the library folder to the path.
 # Mostrar tablas, llenar tablas, convertir a PDF
 def normalize_header(header):
     # Remove non-printable characters but keep #, %, -, and .
-    return re.sub(r'[^\w\sÁÉÍÓÚáéíóúÑñ#%\-.]', '', header).strip()
+    return re.sub(r'[^\w\sÁÉÍÓÚáéíóúÑñ#%()\-.]', '', header).strip()
 
 
 def populate_table(word_document, df_source, table_number, table_headers_row, table_headers, table_types, table_total, table_df_mapping, table_total_headers):
@@ -365,49 +365,17 @@ def main():
     word_file = os.path.join(working_folder, 'Cartas.docx')
     doc = Document(word_file)
     excel_file = os.path.join(working_folder, 'Cartas.xlsx')
-    df_raw = pd.read_excel(excel_file, sheet_name='Core')
-    df_raw = pd.read_excel(excel_file, sheet_name='Core')
-    df_raw = df_raw.sort_values(by='Partida')
-    #df_eseotres = df_raw[df_raw['Membrete'] == 'Eseotres']
-    human_check_word = f"{word_file.rsplit('.', 1)[0]}_updated.docx"
-    
-    tecnica_table = 5
-    tecnica_headers_row = 2
-    tecnica_headers = ['#', 'CLAVES', 'DESCRIPCIÓN', 'VOLUMEN TOTAL', 'MARCA', 'PAIS DE ORIGEN', '% DE CONTENIDO NACIONAL']
-    tecnica_df_mapping = ['Partida','CLAVE (12 DÍGITOS)','Descripción','Cantidad Máxima', 'MARCA O DENOMINACIÓN DISTINTIVA','PAÍS DE ORIGEN','Contenido nacional']
-    tecnica_types = { 
-        '#': '', 
-        'CLAVES': 'string', 
-        'DESCRIPCIÓN': 'string', 
-        'Cantidad Máxima': 'number', 
-        'MARCA': 'string',
-        'PAIS DE ORIGEN': 'string',
-        '% DE CONTENIDO NACIONAL': 'string'
-        }    
-    tecnica_total = False
-    tecnica_total_headers = []
-    #Tabla de pharmacare
-    pharmacare_headers_row = 1
-    pharmacare_1table = 10
-    pharmacare_1headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA 2025-2026', 'REGISTRO SANITARIO', 'CANTIDAD O PORCENTAJE QUE RESPALDA']
-    pharmacare_1mapping = ['CLAVE (12 DÍGITOS)','Descripción','Cantidad Máxima','NÚMERO DE REGISTRO SANITARIO','% RESPALDADO']
-    pharmacare_2table = 6
-    pharmacare2headers = ['PART NO.', 'CLAVE', 'DESCRIPCIÓN BREVE', 'CADUCIDAD MÍNIMA DE LOS BIENES']
-    pharmacare_2mapping =['Partida','CLAVE (12 DÍGITOS)','Descripción','Caducidad mínima']
-    pharmacare_3table = 7
-    pharmacare3headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA 2025-2026', 'REGISTRO SANITARIO']
-    pharmacare_3mapping =['CLAVE (12 DÍGITOS)','Descripción','Cantidad Máxima','NÚMERO DE REGISTRO SANITARIO']
-    
-    pharmacare_types = { 
-        '#': '', 
-        'Cantidad Máxima': 'number',
-        'CLAVES': 'string', 
-        }    
-    pharmacare_total = False
-    pharmacare_total_headers = []
 
+    df_raw = pd.read_excel(excel_file, sheet_name='Core')
+    df_raw = df_raw.sort_values(by='NUMERO DE PARTIDA')
+    df_eseotres = df_raw[df_raw['Membrete'] == 'Eseotres']
+    df_venus = df_raw[df_raw['Membrete'] == 'Venus']
+    df_rafarm = df_raw[df_raw['Membrete'] == 'Rafarm']
+    df_labopharma = df_raw[df_raw['CLAVE (12 DÍGITOS)'] == '010.000.4413.00']
+    human_check_word = os.path.join(working_folder, 'Cartas_updated.docx')
+    
     # Tabla de normas
-    normas_table = 9
+    normas_table = 7
     normas_headers_row = 1
     normas_headers = ['PARTIDA', 'CLAVE DEL COMPENDIO NACIONAL DE INSUMOS PARA LA SALUD', 'DENOMINACIÓN', 'NORMA']
     normas_types = {
@@ -417,29 +385,134 @@ def main():
         'Norma': 'string'
     }
     normas_total = False
-    normas_df_mapping = ['Partida', 'CLAVE (12 DÍGITOS)', 'Descripción', 'Norma']
+    normas_df_mapping = ['NUMERO DE PARTIDA', 'CLAVE (12 DÍGITOS)', 'Descripción', 'Norma']
     normas_total_headers = []
     
     #Propuesta económica
-    económica_table = 12
+    económica_table = 29
     económica_headers_row = 2
-    económica_headers = ['#', 'CLAVES', 'DESCRIPCIÓN', 'VOLUMEN TOTAL', 'MARCA', 'PRECIO UNITARIO', 'SUBTOTAL']
-    economica_df_mapping = ['Partida','CLAVE (12 DÍGITOS)','Descripción','Cantidad Máxima', 'MARCA O DENOMINACIÓN DISTINTIVA', 'Precio Unitario', 'Importe total Máximo']
+    económica_headers = ['No.\nPartida', 'Clave \n(12 dígitos)', 'Descripción del bien ofertado', 'Uni', 'Cant', 'Tipo', 'Mínimo', 'Máximo', 'Mínimo', 'Máximo', 'Unidad de Medida', 'Registro Sanitario', 'Fabricante del bien', 'Precio Unitario', 'Bianual Mínimo', 'Bianual Máximo']
+    economica_df_mapping = ['NUMERO DE PARTIDA', 'CLAVE (12 DÍGITOS)', 'Descripción', 'UNI', 'CANT', 'TIPO', 'Cantidad Mínima', 'Cantidad Máxima', 'Cantidad Mínima', 'Cantidad Máxima', 'Unidad de Medida', 'NÚMERO DE REGISTRO SANITARIO','FABRICANTE', 'Precio Unitario', 'Importe total Mínimo', 'Importe total Máximo']
     economica_types = { 
-        'Partida': 'string',
+        'NUMERO DE PARTIDA': 'string',
         'CLAVE (12 DÍGITOS)': 'string',
-        'Descripción': 'string', 
+        'Descripción': 'string',
+        'UNI': 'string',
+        'CANT': 'string',
+        'TIPO': 'string',
+        'Cantidad Mínima': 'number',
         'Cantidad Máxima': 'number',
-        'MARCA': 'string', 
+        'Cantidad Mínima': 'number',
+        'Cantidad Máxima': 'number',
+        'Unidad de Medida': 'string',
+        'NÚMERO DE REGISTRO SANITARIO': 'string',
+        'FABRICANTE': 'string',
         'Precio Unitario': 'currency',
+        'Importe total Mínimo': 'currency',
         'Importe total Máximo': 'currency'
         }
-    for column in economica_types:
-        print(f"Header: {column}, Type: {economica_types.get(column, 'Missing')}")
-    
     economica_total = True
-    economica_total_headers = ['SUBTOTAL']  
+    economica_total_headers = ['Bianual Mínimo', 'Bianual Máximo'] 
     
+    tecnica_table = 31
+    tecnica_headers_row = 2
+    tecnica_headers = ['NUMERO DE PARTIDA', 'GPO', 'GEN', 'ESP', 'DF', 'NOMBRE GENÉRICO', 'Descripción', 'UNI', 'CANT', 'TIPO', 'Mínima', 'Máxima', 'MARCA O DENOMINACIÓN DISTINTIVA', 'FABRICANTE', 'PAÍS DE ORIGEN', 'NÚMERO DE REGISTRO SANITARIO', 'CÓDIGO DE BARRAS (CUANDO APLIQUE)']
+    tecnica_df_mapping = ['NUMERO DE PARTIDA', 'GPO','GEN','ESP', 'DF', 'NOMBRE GENÉRICO','Descripción', 'UNI', 'CANT','TIPO','Cantidad Mínima',  'Cantidad Máxima', 'MARCA O DENOMINACIÓN DISTINTIVA', 'FABRICANTE', 'PAÍS DE ORIGEN','NÚMERO DE REGISTRO SANITARIO', 'CÓDIGO DE BARRAS']
+    tecnica_types = { 
+        'NUMERO DE PARTIDA': 'string',
+        'GPO': 'string',
+        'GEN': 'string',
+        'ESP': 'string',
+        'DF': 'string',
+        'NOMBRE GENÉRICO': 'string',
+        'Descripción': 'string',
+        'UNI': 'string',
+        'CANT': 'number',
+        'TIPO': 'string', 
+        'Cantidad Mínima': 'number', 
+        'Cantidad Máxima': 'number',
+        'MARCA O DENOMINACIÓN DISTINTIVA': 'string',
+        'FABRICANTE': 'string',
+        'PAÍS DE ORIGEN': 'string',
+        'NÚMERO DE REGISTRO SANITARIO': 'string', 
+        'CÓDIGO DE BARRAS': 'string'
+        }    
+    tecnica_total = False
+    tecnica_total_headers = []
+
+    #Tabla de normas 2
+    normas_table_2 = 33
+    
+    #Tabla con marbete eseotres para todas las claves de Caducidad
+
+    caducidadTodosFabricantes_row = 1
+    caducidadTodosFabricantes_headers = ['PART NO.', 'CLAVE', 'DESCRIPCIÓN BREVE', 'CADUCIDAD MÍNIMA DE LOS BIENES']
+
+    caducidadTodosFabricantes_df_mapping = ['NUMERO DE PARTIDA','CLAVE (12 DÍGITOS)', 'NOMBRE GENÉRICO', 'Caducidad mínima']
+    caducidadTodosFabricantes_types = { 
+        'NUMERO DE PARTIDA': 'string',
+        'CLAVE (12 DÍGITOS)': 'string',
+        'NOMBRE GENÉRICO': 'string',
+        'Caducidad mínima': 'string'
+    }
+    caducidadTodosFabricantes_total = False
+    caducidadTodosFabricantes_total_headers = []
+    
+    caducidadEseotres = 34
+    caducidadRafarm = 35
+    caducidadLabopharma = 36
+
+    # Rafarm Acuerdo
+    Rafarm_acuerdo_table = 41
+    Rafarm_acuerdo_row = 1
+    Rafarm_acuerdo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA 2025-2026', 'REGISTRO SANITARIO']
+    Rafarm_acuerdo_types = {
+        'CLAVE': 'string',
+        'DESCRIPCIÓN': 'string',
+        'Cantidad Máxima': 'number',
+        'REGISTRO SANITARIO': 'string'
+    }
+    Rafarm_acuerdo_df_mapping = ['CLAVE (12 DÍGITOS)', 'Descripción', 'Cantidad Máxima', 'NÚMERO DE REGISTRO SANITARIO']
+    ##Rafarm apoyo
+    Rafarm_apoyo_table = 42
+    Rafarm_apoyo_row = 1
+    Rafarm_apoyo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA\n2025-2026', 'REGISTRO SANITARIO', 'CANTIDAD O PORCENTAJE QUE RESPALDA']
+    Rafarm_apoyo_types = {
+        'CLAVE': 'string',
+        'DESCRIPCIÓN': 'string',
+        'Cantidad Máxima': 'number',
+        'REGISTRO SANITARIO': 'string',
+        'CANTIDAD O PORCENTAJE QUE RESPALDA': 'string'
+    }
+    Rafarm_apoyo_df_mapping = ['CLAVE (12 DÍGITOS)', 'Descripción', 'Cantidad Máxima', 'NÚMERO DE REGISTRO SANITARIO','% RESPALDADO']
+    Rafarm_total_headers = []
+    Rafarm_total = False
+    # Labopharm acuerdo
+    LABATEC_acuerdo_table = 43
+    LABATEC_acuerdo_row = 1
+    LABATEC_acuerdo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA 2025-2026', 'REGISTRO SANITARIO']
+    LABATEC_acuerdo_types = {
+        'CLAVE': 'string',
+        'DESCRIPCIÓN': 'string',
+        'Cantidad Máxima': 'number',
+        'REGISTRO SANITARIO': 'string'
+    }
+    LABATEC_acuerdo_df_mapping = ['CLAVE (12 DÍGITOS)', 'Descripción', 'Cantidad Máxima', 'NÚMERO DE REGISTRO SANITARIO']
+    ##Labopharma Apoyo
+    LABATEC_apoyo_table = 45
+    LABATEC_apoyo_row = 1
+    LABATEC_apoyo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA\n2025-2026', 'REGISTRO SANITARIO', 'CANTIDAD O PORCENTAJE QUE RESPALDA']
+    LABATEC_apoyo_types = {
+        'CLAVE': 'string',
+        'DESCRIPCIÓN': 'string',
+        'Cantidad Máxima': 'number',
+        'REGISTRO SANITARIO': 'string',
+        'CANTIDAD O PORCENTAJE QUE RESPALDA': 'string'
+    }
+    LABATEC_apoyo_df_mapping = ['CLAVE (12 DÍGITOS)', 'Descripción', 'Cantidad Máxima', 'NÚMERO DE REGISTRO SANITARIO','% RESPALDADO']
+    LABATEC_total_headers = []
+    LABATEC_total = False
+
     while True:
         print("\nMenu:")
         print("1) Show tables of the Word document: working")
@@ -452,21 +525,33 @@ def main():
         if choice == '1':
             show_doc_tables(word_file)
         elif choice == '2':
-            #Técncica
-            doc = populate_table(doc, df_raw, tecnica_table, tecnica_headers_row, tecnica_headers, tecnica_types, tecnica_total, tecnica_df_mapping, tecnica_total_headers)
-            #Pharmacare 1
-            doc = populate_table(doc, df_raw, pharmacare_1table, pharmacare_headers_row, pharmacare_1headers, pharmacare_types, pharmacare_total, pharmacare_1mapping, pharmacare_total_headers)            
-            #Pharmacare 2
-            doc = populate_table(doc, df_raw, pharmacare_2table, pharmacare_headers_row, pharmacare2headers, pharmacare_types, pharmacare_total, pharmacare_2mapping, pharmacare_total_headers)
-            #Pharmacare 3
-            doc = populate_table(doc, df_raw, pharmacare_3table, pharmacare_headers_row, pharmacare3headers, economica_types, pharmacare_total, pharmacare_3mapping, pharmacare_total_headers)
             #Normas
             doc = populate_table(doc, df_raw, normas_table, normas_headers_row, normas_headers, normas_types, normas_total, normas_df_mapping, normas_total_headers)
+            #Normas 2
+            doc = populate_table(doc, df_raw, normas_table_2, normas_headers_row, normas_headers, normas_types, normas_total, normas_df_mapping, normas_total_headers)
             #Económica
             doc = populate_table(doc, df_raw, económica_table, económica_headers_row, económica_headers, economica_types, economica_total, economica_df_mapping, economica_total_headers)
-            
+            #Técncica
+            doc = populate_table(doc, df_raw, tecnica_table, tecnica_headers_row, tecnica_headers, tecnica_types, tecnica_total, tecnica_df_mapping, tecnica_total_headers)
+            #Caducidad SO3
+            doc = populate_table(doc, df_raw, caducidadEseotres, caducidadTodosFabricantes_row, caducidadTodosFabricantes_headers, caducidadTodosFabricantes_types, caducidadTodosFabricantes_total, caducidadTodosFabricantes_df_mapping, caducidadTodosFabricantes_total_headers)
+            #Caducidad RAFARM
+            doc = populate_table(doc, df_raw, caducidadRafarm, caducidadTodosFabricantes_row, caducidadTodosFabricantes_headers, caducidadTodosFabricantes_types, caducidadTodosFabricantes_total, caducidadTodosFabricantes_df_mapping, caducidadTodosFabricantes_total_headers)
+            #Caducidad Labopharma            
+            doc = populate_table(doc, df_raw, caducidadLabopharma, caducidadTodosFabricantes_row, caducidadTodosFabricantes_headers, caducidadTodosFabricantes_types, caducidadTodosFabricantes_total, caducidadTodosFabricantes_df_mapping, caducidadTodosFabricantes_total_headers)
+            #RAFARM acuerdo
+            doc = populate_table(doc, df_raw, Rafarm_acuerdo_table, Rafarm_acuerdo_row, Rafarm_acuerdo_headers, Rafarm_acuerdo_types, Rafarm_total, Rafarm_acuerdo_df_mapping, Rafarm_total_headers)
+            #RAFARM apoyo
+            doc = populate_table(doc, df_raw, Rafarm_apoyo_table, Rafarm_apoyo_row, Rafarm_apoyo_headers, Rafarm_apoyo_types, Rafarm_total, Rafarm_apoyo_df_mapping, Rafarm_total_headers)
+            save_to_word(doc, word_file)
+            #LABATEC Acuerdo
+            doc = populate_table(doc, df_raw, LABATEC_acuerdo_table, LABATEC_acuerdo_row, LABATEC_acuerdo_headers, LABATEC_acuerdo_types, LABATEC_total, LABATEC_acuerdo_df_mapping, LABATEC_total_headers)   
+            #LABATEC Apoyo
+            doc = populate_table(doc, df_raw, LABATEC_apoyo_table, LABATEC_apoyo_row, LABATEC_apoyo_headers, LABATEC_apoyo_types, LABATEC_total, LABATEC_apoyo_df_mapping, LABATEC_total_headers)
+
             save_to_word(doc, word_file)       
         elif choice == '3': 
+
             save_as_pdf(human_check_word)
         elif choice == '4': 
             generador_propuesta_economica_excel()

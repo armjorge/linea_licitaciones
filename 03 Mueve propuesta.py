@@ -1,6 +1,10 @@
+
 import os
 import shutil
 import pandas as pd
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+working_folder = os.path.abspath(os.path.join(script_directory, '..'))
 
 def clear_move_directories(move_paths):
     """
@@ -10,6 +14,7 @@ def clear_move_directories(move_paths):
     - move_paths (list): List of unique directory paths to clear.
     """
     for move_path in move_paths:
+        move_path = eval(move_path)  # Convert to path using os.path.join
         if os.path.exists(move_path):
             for file_name in os.listdir(move_path):
                 file_path = os.path.join(move_path, file_name)
@@ -26,7 +31,7 @@ def clear_move_directories(move_paths):
             os.makedirs(move_path)  # Create the directory if it doesn't exist
             print(f"Created directory: {move_path}")
 
-def audit_copy(input_data):
+def audit_copy(input_data, working_folder):
     """
     Audits file presence in the source directory and copies to the specified destination.
     If a file is missing or data is invalid, it is logged in the missingfiles list.
@@ -35,8 +40,8 @@ def audit_copy(input_data):
     
     for index, row in input_data.iterrows():
         file_name = row['Nombre de archivo']
-        source_dir = row['Source']
-        destination_dir = row['Move']
+        source_dir = eval(row['Source'])  # Convert using os.path.join
+        destination_dir = eval(row['Move'])  # Convert using os.path.join
         
         # Ensure file_name and source_dir are strings
         if pd.isna(file_name) or pd.isna(source_dir) or pd.isna(destination_dir):
@@ -45,8 +50,6 @@ def audit_copy(input_data):
             continue
         
         file_name = str(file_name)
-        source_dir = str(source_dir)
-        destination_dir = str(destination_dir)
         
         source_path = os.path.join(source_dir, file_name)
         destination_path = os.path.join(destination_dir, file_name)
@@ -64,8 +67,11 @@ def audit_copy(input_data):
     return missingfiles
 
 def main():
+    # Define the working folder
+    #working_folder = r'YOUR_WORKING_DIRECTORY'  # Replace with the actual working directory
+
     # Path to the Excel file
-    excel_path = r'.\Adjudicación Dabigatrán.xlsx'
+    excel_path = os.path.join(working_folder, 'Cartas.xlsx')
     
     # Load the Excel file as a dataframe from the sheet named 'Core'
     input_data = pd.read_excel(
@@ -78,19 +84,21 @@ def main():
     required_columns = {'Nombre de archivo', 'Source', 'Move'}
     if required_columns.issubset(input_data.columns):
         input_data = input_data.dropna(subset=required_columns)
-        input_data = input_data[(input_data['Nombre de archivo'].str.strip() != '') &
-                                (input_data['Source'].str.strip() != '') &
-                                (input_data['Move'].str.strip() != '')]        
+        input_data = input_data[(input_data['Nombre de archivo'].str.strip() != '') & 
+                                (input_data['Source'].str.strip() != '') & 
+                                (input_data['Move'].str.strip() != '')]
+        
         # Clear previous files in 'Move' directories
         unique_moves = input_data['Move'].dropna().unique()
         clear_move_directories(unique_moves)
         
         # Audit and copy files
-        missingfiles = audit_copy(input_data)
+        missingfiles = audit_copy(input_data, working_folder)
         if missingfiles:
             print("\nMissing files:")
             for item in missingfiles:
-                print(f"File: {item['Nombre de archivo']} from: {item['Source']}")
+                #print(f"File: {item['Nombre de archi vo']} from: {item['Source']}")
+                print(f"File: {item['Nombre de archivo']} from: /{os.path.basename(os.path.normpath(item['Source']))}")
         else: 
             print("\n*************\nSuccess! \n*************\n") 
     else:
