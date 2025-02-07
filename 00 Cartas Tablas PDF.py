@@ -371,7 +371,7 @@ def main():
     df_eseotres = df_raw[df_raw['Membrete'] == 'Eseotres']
     df_venus = df_raw[df_raw['Membrete'] == 'Venus']
     df_rafarm = df_raw[df_raw['Membrete'] == 'Rafarm']
-    df_labopharma = df_raw[df_raw['CLAVE (12 DÍGITOS)'] == '010.000.4413.00']
+    df_labopharma = df_raw[df_raw['Membrete'] == 'Labotec']
     human_check_word = os.path.join(working_folder, 'Cartas_updated.docx')
     
     # Tabla de normas
@@ -389,7 +389,7 @@ def main():
     normas_total_headers = []
     
     #Propuesta económica
-    económica_table = 29
+    económica_table = 28
     económica_headers_row = 2
     económica_headers = ['No.\nPartida', 'Clave \n(12 dígitos)', 'Descripción del bien ofertado', 'Uni', 'Cant', 'Tipo', 'Mínimo', 'Máximo', 'Mínimo', 'Máximo', 'Unidad de Medida', 'Registro Sanitario', 'Fabricante del bien', 'Precio Unitario', 'Bianual Mínimo', 'Bianual Máximo']
     economica_df_mapping = ['NUMERO DE PARTIDA', 'CLAVE (12 DÍGITOS)', 'Descripción', 'UNI', 'CANT', 'TIPO', 'Cantidad Mínima', 'Cantidad Máxima', 'Cantidad Mínima', 'Cantidad Máxima', 'Unidad de Medida', 'NÚMERO DE REGISTRO SANITARIO','FABRICANTE', 'Precio Unitario', 'Importe total Mínimo', 'Importe total Máximo']
@@ -414,7 +414,7 @@ def main():
     economica_total = True
     economica_total_headers = ['Bianual Mínimo', 'Bianual Máximo'] 
     
-    tecnica_table = 31
+    tecnica_table = 30
     tecnica_headers_row = 2
     tecnica_headers = ['NUMERO DE PARTIDA', 'GPO', 'GEN', 'ESP', 'DF', 'NOMBRE GENÉRICO', 'Descripción', 'UNI', 'CANT', 'TIPO', 'Mínima', 'Máxima', 'MARCA O DENOMINACIÓN DISTINTIVA', 'FABRICANTE', 'PAÍS DE ORIGEN', 'NÚMERO DE REGISTRO SANITARIO', 'CÓDIGO DE BARRAS (CUANDO APLIQUE)']
     tecnica_df_mapping = ['NUMERO DE PARTIDA', 'GPO','GEN','ESP', 'DF', 'NOMBRE GENÉRICO','Descripción', 'UNI', 'CANT','TIPO','Cantidad Mínima',  'Cantidad Máxima', 'MARCA O DENOMINACIÓN DISTINTIVA', 'FABRICANTE', 'PAÍS DE ORIGEN','NÚMERO DE REGISTRO SANITARIO', 'CÓDIGO DE BARRAS']
@@ -441,7 +441,7 @@ def main():
     tecnica_total_headers = []
 
     #Tabla de normas 2
-    normas_table_2 = 33
+    normas_table_2 = 32
     
     #Tabla con marbete eseotres para todas las claves de Caducidad
 
@@ -458,14 +458,21 @@ def main():
     caducidadTodosFabricantes_total = False
     caducidadTodosFabricantes_total_headers = []
     
-    caducidadEseotres = 34
-    caducidadRafarm = 35
-    caducidadLabopharma = 36
-
+    caducidadEseotres = 33
+    caducidadRafarm = 34
+    caducidadLabopharma = 35
+    # Representación SO3
+    representacion_so3 = 39
+    representacion_so3_row = 1
+    representacion_so3_acuerdo_headers = ['NUMERO DE PARTIDA', 'CLAVE (12 DÍGITOS)', 'FABRICANTE', 'NÚMERO DE REGISTRO SANITARIO']
+    representacion_so3_types = {'CLAVE': 'string'}
+    representacion_so3_df_mapping = ['NUMERO DE PARTIDA', 'CLAVE (12 DÍGITOS)','FABRICANTE', 'NÚMERO DE REGISTRO SANITARIO']
+    representacion_so3_headers = []
+    representacion_so3_total = False
     # Rafarm Acuerdo
-    Rafarm_acuerdo_table = 41
+    Rafarm_acuerdo_table = 40
     Rafarm_acuerdo_row = 1
-    Rafarm_acuerdo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA 2025-2026', 'REGISTRO SANITARIO']
+    Rafarm_acuerdo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA 2025 2026', 'REGISTRO SANITARIO']
     Rafarm_acuerdo_types = {
         'CLAVE': 'string',
         'DESCRIPCIÓN': 'string',
@@ -473,8 +480,9 @@ def main():
         'REGISTRO SANITARIO': 'string'
     }
     Rafarm_acuerdo_df_mapping = ['CLAVE (12 DÍGITOS)', 'Descripción', 'Cantidad Máxima', 'NÚMERO DE REGISTRO SANITARIO']
+    
     ##Rafarm apoyo
-    Rafarm_apoyo_table = 42
+    Rafarm_apoyo_table = 41
     Rafarm_apoyo_row = 1
     Rafarm_apoyo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA\n2025-2026', 'REGISTRO SANITARIO', 'CANTIDAD O PORCENTAJE QUE RESPALDA']
     Rafarm_apoyo_types = {
@@ -488,7 +496,7 @@ def main():
     Rafarm_total_headers = []
     Rafarm_total = False
     # Labopharm acuerdo
-    LABATEC_acuerdo_table = 43
+    LABATEC_acuerdo_table = 42
     LABATEC_acuerdo_row = 1
     LABATEC_acuerdo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA 2025-2026', 'REGISTRO SANITARIO']
     LABATEC_acuerdo_types = {
@@ -499,7 +507,7 @@ def main():
     }
     LABATEC_acuerdo_df_mapping = ['CLAVE (12 DÍGITOS)', 'Descripción', 'Cantidad Máxima', 'NÚMERO DE REGISTRO SANITARIO']
     ##Labopharma Apoyo
-    LABATEC_apoyo_table = 45
+    LABATEC_apoyo_table = 44
     LABATEC_apoyo_row = 1
     LABATEC_apoyo_headers = ['CLAVE', 'DESCRIPCIÓN', 'CANTIDAD MÁXIMA REQUERIDA\n2025-2026', 'REGISTRO SANITARIO', 'CANTIDAD O PORCENTAJE QUE RESPALDA']
     LABATEC_apoyo_types = {
@@ -527,27 +535,29 @@ def main():
         elif choice == '2':
             #Normas
             doc = populate_table(doc, df_raw, normas_table, normas_headers_row, normas_headers, normas_types, normas_total, normas_df_mapping, normas_total_headers)
-            #Normas 2
-            doc = populate_table(doc, df_raw, normas_table_2, normas_headers_row, normas_headers, normas_types, normas_total, normas_df_mapping, normas_total_headers)
             #Económica
             doc = populate_table(doc, df_raw, económica_table, económica_headers_row, económica_headers, economica_types, economica_total, economica_df_mapping, economica_total_headers)
             #Técncica
-            doc = populate_table(doc, df_raw, tecnica_table, tecnica_headers_row, tecnica_headers, tecnica_types, tecnica_total, tecnica_df_mapping, tecnica_total_headers)
+            #doc = populate_table(doc, df_raw, tecnica_table, tecnica_headers_row, tecnica_headers, tecnica_types, tecnica_total, tecnica_df_mapping, tecnica_total_headers)
+            #Normas 2
+            doc = populate_table(doc, df_raw, normas_table_2, normas_headers_row, normas_headers, normas_types, normas_total, normas_df_mapping, normas_total_headers)
             #Caducidad SO3
             doc = populate_table(doc, df_raw, caducidadEseotres, caducidadTodosFabricantes_row, caducidadTodosFabricantes_headers, caducidadTodosFabricantes_types, caducidadTodosFabricantes_total, caducidadTodosFabricantes_df_mapping, caducidadTodosFabricantes_total_headers)
             #Caducidad RAFARM
             doc = populate_table(doc, df_raw, caducidadRafarm, caducidadTodosFabricantes_row, caducidadTodosFabricantes_headers, caducidadTodosFabricantes_types, caducidadTodosFabricantes_total, caducidadTodosFabricantes_df_mapping, caducidadTodosFabricantes_total_headers)
             #Caducidad Labopharma            
-            doc = populate_table(doc, df_raw, caducidadLabopharma, caducidadTodosFabricantes_row, caducidadTodosFabricantes_headers, caducidadTodosFabricantes_types, caducidadTodosFabricantes_total, caducidadTodosFabricantes_df_mapping, caducidadTodosFabricantes_total_headers)
-            #RAFARM acuerdo
+            doc = populate_table(doc, df_labopharma, caducidadLabopharma, caducidadTodosFabricantes_row, caducidadTodosFabricantes_headers, caducidadTodosFabricantes_types, caducidadTodosFabricantes_total, caducidadTodosFabricantes_df_mapping, caducidadTodosFabricantes_total_headers)
+            # Manifiesto de representación legal. 
+            doc = populate_table(doc, df_labopharma, representacion_so3, representacion_so3_row, representacion_so3_acuerdo_headers, representacion_so3_types, representacion_so3_total, representacion_so3_df_mapping, representacion_so3_headers)
+            #RAFARM Permiso de importación
             doc = populate_table(doc, df_raw, Rafarm_acuerdo_table, Rafarm_acuerdo_row, Rafarm_acuerdo_headers, Rafarm_acuerdo_types, Rafarm_total, Rafarm_acuerdo_df_mapping, Rafarm_total_headers)
             #RAFARM apoyo
             doc = populate_table(doc, df_raw, Rafarm_apoyo_table, Rafarm_apoyo_row, Rafarm_apoyo_headers, Rafarm_apoyo_types, Rafarm_total, Rafarm_apoyo_df_mapping, Rafarm_total_headers)
             save_to_word(doc, word_file)
             #LABATEC Acuerdo
-            doc = populate_table(doc, df_raw, LABATEC_acuerdo_table, LABATEC_acuerdo_row, LABATEC_acuerdo_headers, LABATEC_acuerdo_types, LABATEC_total, LABATEC_acuerdo_df_mapping, LABATEC_total_headers)   
+            doc = populate_table(doc, df_labopharma, LABATEC_acuerdo_table, LABATEC_acuerdo_row, LABATEC_acuerdo_headers, LABATEC_acuerdo_types, LABATEC_total, LABATEC_acuerdo_df_mapping, LABATEC_total_headers)   
             #LABATEC Apoyo
-            doc = populate_table(doc, df_raw, LABATEC_apoyo_table, LABATEC_apoyo_row, LABATEC_apoyo_headers, LABATEC_apoyo_types, LABATEC_total, LABATEC_apoyo_df_mapping, LABATEC_total_headers)
+            doc = populate_table(doc, df_labopharma, LABATEC_apoyo_table, LABATEC_apoyo_row, LABATEC_apoyo_headers, LABATEC_apoyo_types, LABATEC_total, LABATEC_apoyo_df_mapping, LABATEC_total_headers)
 
             save_to_word(doc, word_file)       
         elif choice == '3': 
