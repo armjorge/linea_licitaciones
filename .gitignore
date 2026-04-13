@@ -169,3 +169,14 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+.DS_Store
+__pycache__/
+*.pyc
+
+~$*
+.~$*
+fijos/
+hibridos PDF_PDF/
+Propuesta a cargar/
+bases/
+Anexos Birmex/
