@@ -6,8 +6,8 @@ from num2words import num2words
 import re
 import os
 import sys
-#import win32com.client
-#import win32com.client as win32
+import win32com.client
+import win32com.client as win32
 
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -16,12 +16,12 @@ function_library = os.path.abspath(os.path.join(script_directory, 'Library'))
 sys.path.append(function_library)  # Add the library folder to the path.
 
 
-#cache_dir = os.path.join(os.environ['LOCALAPPDATA'], 'Temp', 'gen_py')
-#if os.path.exists(cache_dir):
-#    shutil.rmtree(cache_dir)
-#    print("win32com cache cleared.")
-#else:
-#    print("win32com cache folder not found.")
+cache_dir = os.path.join(os.environ['LOCALAPPDATA'], 'Temp', 'gen_py')
+if os.path.exists(cache_dir):
+    shutil.rmtree(cache_dir)
+    print("win32com cache cleared.")
+else:
+    print("win32com cache folder not found.")
 
 # Mostrar tablas, llenar tablas, convertir a PDF
 def normalize_header(header):

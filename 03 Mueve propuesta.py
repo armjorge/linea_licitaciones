@@ -59,11 +59,11 @@ def audit_copy(input_data, working_folder):
             os.makedirs(destination_dir, exist_ok=True)
             # Copy file
             shutil.copy2(source_path, destination_path)
-            print(f"{file_name} from {source_dir} was copied to {destination_dir}")
+            print(f"{file_name} from \\{os.path.basename(source_dir)} was copied to \\{os.path.basename(destination_dir)}")
+
         else:
-            print(f"File not found: {source_path}")
+            print(f"File not found: {os.path.basename(source_path)}")
             missingfiles.append({'Nombre de archivo': file_name, 'Source': source_dir})
-    
     return missingfiles
 
 def main():
@@ -80,6 +80,8 @@ def main():
         usecols=['Nombre de archivo', 'Source', 'Move']  # Columns to load
     )
     
+    # Inyectar 
+
     # Check if required columns exist
     required_columns = {'Nombre de archivo', 'Source', 'Move'}
     if required_columns.issubset(input_data.columns):
