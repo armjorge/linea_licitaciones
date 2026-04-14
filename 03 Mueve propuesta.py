@@ -2,9 +2,7 @@
 import os
 import shutil
 import pandas as pd
-
-script_directory = os.path.dirname(os.path.abspath(__file__))
-working_folder = os.path.abspath(os.path.join(script_directory, '..'))
+from dotenv import load_dotenv
 
 def clear_move_directories(move_paths):
     """
@@ -67,44 +65,80 @@ def audit_copy(input_data, working_folder):
     return missingfiles
 
 def main():
-    # Define the working folder
-    #working_folder = r'YOUR_WORKING_DIRECTORY'  # Replace with the actual working directory
+    load_dotenv()
+    working_folder = os.getenv("working_folder")
+    file_manager = os.path.join(working_folder, 'File management')
+    final_proposal = os.getenv('final_proposal')
+    excel_file = os.path.join(working_folder, 'files_flow.xlsx')
 
-    # Path to the Excel file
-    excel_path = os.path.join(working_folder, 'Cartas.xlsx')
-    
-    # Load the Excel file as a dataframe from the sheet named 'Core'
-    input_data = pd.read_excel(
-        excel_path, 
-        sheet_name='Parametrización',  # Specify the sheet name
-        usecols=['Nombre de archivo', 'Source', 'Move']  # Columns to load
-    )
-    
-    # Inyectar 
+    try:
+        df = pd.read_excel(excel_file, sheet_name='Parametrización')
+        df = df[['File_name', 'Source', 'Source name', 'Move']]
+    except Exception as e:
+        print(f"❌ Error al leer la hoja Parametrización: {e}")
+        return
 
-    # Check if required columns exist
-    required_columns = {'Nombre de archivo', 'Source', 'Move'}
-    if required_columns.issubset(input_data.columns):
-        input_data = input_data.dropna(subset=required_columns)
-        input_data = input_data[(input_data['Nombre de archivo'].str.strip() != '') & 
-                                (input_data['Source'].str.strip() != '') & 
-                                (input_data['Move'].str.strip() != '')]
+    # --- 1. Validación de Restricción de Datos ---
+    # Si 'Source name' es NaN, esperamos que las demás también lo sean
+    inconsistent_rows = df[df['Source name'].isna() & df[['File_name', 'Source', 'Move']].notna().any(axis=1)]
+    
+    if not inconsistent_rows.empty:
+        print("\n⚠️ ADVERTENCIA: Filas con datos inconsistentes (Source name vacío pero otras columnas con datos):")
+        print(inconsistent_rows)
+        print("\nPor favor, soluciona esto en el Excel antes de continuar.")
+        return
+
+    # Limpiar filas vacías basadas en Source name
+    df = df.dropna(subset=['Source name'])
+
+    # --- 2. Verificación de existencia de archivos fuente ---
+    missing_sources = []
+    tasks = []
+
+    for _, row in df.iterrows():
+        source_path = os.path.join(file_manager, str(row['Source']), str(row['Source name']))
         
-        # Clear previous files in 'Move' directories
-        unique_moves = input_data['Move'].dropna().unique()
-        clear_move_directories(unique_moves)
+        # Procesar destino (manejar el caso de "CARPETA, ARCHIVO.pdf")
+        move_folder = str(row['Move'])
+        file_name_raw = str(row['File_name'])
         
-        # Audit and copy files
-        missingfiles = audit_copy(input_data, working_folder)
-        if missingfiles:
-            print("\nMissing files:")
-            for item in missingfiles:
-                #print(f"File: {item['Nombre de archi vo']} from: {item['Source']}")
-                print(f"File: {item['Nombre de archivo']} from: /{os.path.basename(os.path.normpath(item['Source']))}")
-        else: 
-            print("\n*************\nSuccess! \n*************\n") 
-    else:
-        print("The required columns ['Nombre de archivo', 'Source', 'Move'] are missing in the input data.")
+        if ',' in file_name_raw:
+            sub_folder, clean_file_name = [x.strip() for x in file_name_raw.split(',')]
+            target_path = os.path.join(final_proposal, move_folder, sub_folder, clean_file_name)
+        else:
+            target_path = os.path.join(final_proposal, move_folder, file_name_raw)
+
+        if os.path.exists(source_path):
+            tasks.append((source_path, target_path))
+        else:
+            missing_sources.append(source_path)
+
+    if missing_sources:
+        print("\n❌ ERROR: Los siguientes archivos fuente no se encontraron:")
+        for m in missing_sources:
+            print(f"   - {m}")
+        return
+
+    # --- 3. Limpiar carpeta Final Proposal y Copiar ---
+    print(f"\n🧹 Limpiando carpeta de propuesta final: {final_proposal}")
+    if os.path.exists(final_proposal):
+        # Borramos el contenido para asegurar una carga limpia
+        shutil.rmtree(final_proposal)
+    
+    os.makedirs(final_proposal, exist_ok=True)
+
+    print(f"🚀 Iniciando copiado de {len(tasks)} archivos...")
+    
+    for src, dst in tasks:
+        # Crear subcarpetas si no existen (ej. LEGAL, o carpetas por CLAVE)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        # Copiamos preservando metadatos
+        shutil.copy2(src, dst)
+        print(f"✅ Copiado: {os.path.basename(dst)} -> {os.path.relpath(dst, final_proposal)}")
+
+    print(f"\n✨ PROCESO COMPLETADO EXITOSAMENTE ✨")
+    print(f"La propuesta está lista en: {final_proposal}")
+
 
 if __name__ == "__main__":
     main()

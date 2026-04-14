@@ -1,10 +1,12 @@
 import os
 import shutil
 import pandas as pd
-from PyPDF2 import PdfMerger
+from PyPDF2 import PdfMerger, PdfWriter
+from dotenv import load_dotenv
 
-script_directory = os.path.dirname(os.path.abspath(__file__))
-working_folder = os.path.abspath(os.path.join(script_directory, '..'))
+import glob 
+
+
 
 def create_dictionaries(df):
     """
@@ -78,20 +80,90 @@ def process_dictionaries(header_dicts, output_folder):
                 #print(f"  - {file}")
 
 def main():
-    # Define paths
-    excel_file = os.path.join(working_folder, 'Cartas.xlsx')
-    output_folder = os.path.join(working_folder, 'Híbridos')
-    
-    # Load the Excel file and read the 'Hybrids' sheet
+    # Definición de rutas
+    load_dotenv()
+    working_folder = os.getenv("working_folder")
+    excel_file = os.path.join(working_folder, 'files_flow.xlsx')
+    output_folder = os.path.join(working_folder, 'File management', 'hibridos PDF_PDF')
+    folder_prefix = os.path.join(working_folder, 'File management')
+
     try:
-        df = pd.read_excel(excel_file, sheet_name='Hybrids', header=None)
+        # Cargamos sin cabecera para tratar la primera fila como el nombre del archivo final
+        df = pd.read_excel(excel_file, sheet_name='PDF_PDF', header=None)
     except Exception as e:
-        print(f"Error reading Excel file: {e}")
+        print(f"❌ Error al leer la hoja PDF_PDF: {e}")
         return
+
+    # --- 1. Preparación de la Carpeta de Salida ---
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
     
-    # Create dictionaries and process
-    header_dicts = create_dictionaries(df)
-    process_dictionaries(header_dicts, output_folder)
+    # Verificar extensiones no permitidas en la carpeta destino
+    non_pdf_files = [f for f in os.listdir(output_folder) if not f.lower().endswith('.pdf')]
+    if non_pdf_files:
+        print(f"⚠️ Alerta: Se encontraron archivos no PDF en la carpeta de salida: {non_pdf_files}")
+        print("Por favor, límpiala antes de continuar.")
+        return
+
+    # Limpiar PDFs existentes
+    for f in glob.glob(os.path.join(output_folder, "*.pdf")):
+        os.remove(f)
+
+    # --- 2. Procesamiento por Columna ---
+    for col in df.columns:
+        serie = df[col].dropna()
+        if serie.empty:
+            continue
+        
+        final_name = serie.iloc[0]  # El primer registro es el nombre del archivo final
+        input_records = serie.iloc[1:]  # El resto son las rutas relativas
+        
+        file_paths_to_merge = []
+        missing_files = []
+
+        for record in input_records:
+            # Separamos 'folder, filename'
+            try:
+                parts = [p.strip() for p in record.split(',')]
+                if len(parts) == 2:
+                    subfolder, filename = parts
+                    full_path = os.path.join(folder_prefix, subfolder, filename)
+                    
+                    if os.path.exists(full_path):
+                        file_paths_to_merge.append(full_path)
+                    else:
+                        missing_files.append(full_path)
+                else:
+                    print(f"⚠️ Formato incorrecto en registro: '{record}'. Debe ser 'Carpeta, archivo.pdf'")
+            except Exception as e:
+                print(f"Error procesando registro {record}: {e}")
+
+        # --- 3. Validación y Mezclado ---
+        if missing_files:
+            print(f"\n❌ Error: Faltan archivos para generar '{final_name}':")
+            for m in missing_files:
+                print(f"   - No existe: {m}")
+            continue # Salta a la siguiente columna
+
+        # Si todos los archivos de la serie existen, procedemos al merge
+        if file_paths_to_merge:
+            writer = PdfWriter()
+            try:
+                for path in file_paths_to_merge:
+                    writer.append(path)
+                
+                dest_path = os.path.join(output_folder, final_name)
+                with open(dest_path, "wb") as f:
+                    writer.write(f)
+                
+                print(f"✅ Híbrido generado: {final_name} (Piezas: {len(file_paths_to_merge)})")
+            except Exception as e:
+                print(f"❌ Error al fusionar {final_name}: {e}")
+
+    print(f"\n✨ Proceso de hibridación completado en: {output_folder}")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()

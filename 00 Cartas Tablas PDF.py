@@ -8,12 +8,12 @@ import os
 import sys
 import win32com.client
 import win32com.client as win32
+from dotenv import load_dotenv
+load_dotenv()
 
 
-script_directory = os.path.dirname(os.path.abspath(__file__))
-working_folder = os.path.abspath(os.path.join(script_directory, '..'))
-function_library = os.path.abspath(os.path.join(script_directory, 'Library'))
-sys.path.append(function_library)  # Add the library folder to the path.
+# Usamos os.getenv("nombre_de_la_variable")
+working_folder = os.getenv("working_folder")
 
 
 cache_dir = os.path.join(os.environ['LOCALAPPDATA'], 'Temp', 'gen_py')
@@ -362,17 +362,13 @@ def printBookmarks(word_file):
 # Orquestador
 
 def main():
-    word_file = os.path.join(working_folder, 'Cartas.docx')
+    word_file = os.path.join(working_folder, 'DOC Templates', 'IM_abril.pdf')
     doc = Document(word_file)
-    excel_file = os.path.join(working_folder, 'Cartas.xlsx')
+    excel_file = os.path.join(working_folder, 'files_flow.xlsx')
 
-    df_raw = pd.read_excel(excel_file, sheet_name='Core')
+    df_raw = pd.read_excel(excel_file, sheet_name='Tecnica_economica')
     df_raw = df_raw.sort_values(by='NUMERO DE PARTIDA')
-    df_eseotres = df_raw[df_raw['Membrete'] == 'Eseotres']
-    df_venus = df_raw[df_raw['Membrete'] == 'Venus']
-    df_rafarm = df_raw[df_raw['Membrete'] == 'Rafarm']
-    df_labopharma = df_raw[df_raw['Membrete'] == 'Labotec']
-    human_check_word = os.path.join(working_folder, 'Cartas_updated.docx')
+    human_check_word = os.path.join(file_management, 'Cartas_updated.docx')
     
     # Tabla de normas
     normas_table = 7
